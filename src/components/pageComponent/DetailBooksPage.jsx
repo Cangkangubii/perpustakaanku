@@ -54,7 +54,7 @@ const DetailBookPage = ({ initialValues = {} }) => {
   const router = useRouter();
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Tabs defaultValue="details" className="w-[400px]">
+      <Tabs defaultValue="details" className="w-full py-4">
         <TabsList>
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger
@@ -68,7 +68,7 @@ const DetailBookPage = ({ initialValues = {} }) => {
         </TabsList>
         <TabsContent></TabsContent>
       </Tabs>
-      <h1>Detail Books</h1>
+      <h1 className="text-lg font-semibold">Detail Books</h1>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FieldSet className="w-full max-w-md">
           <FieldGroup>

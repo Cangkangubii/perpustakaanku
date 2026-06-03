@@ -1,19 +1,31 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+} from "@/components/ui/sidebar";
+import {
+  GalleryVerticalEndIcon,
+  AudioLinesIcon,
+  TerminalIcon,
+  TerminalSquareIcon,
+  BotIcon,
+  BookOpenIcon,
+  Settings2Icon,
+  FrameIcon,
+  PieChartIcon,
+  MapIcon,
+  Frame,
+} from "lucide-react";
 
 // This is sample data.
 const data = {
@@ -25,33 +37,16 @@ const data = {
   teams: [
     {
       name: "Acme Inc",
-      logo: (
-        <GalleryVerticalEndIcon />
-      ),
+      logo: <GalleryVerticalEndIcon />,
       plan: "Enterprise",
     },
-    {
-      name: "Acme Corp.",
-      logo: (
-        <AudioLinesIcon />
-      ),
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: (
-        <TerminalIcon />
-      ),
-      plan: "Free",
-    },
   ],
+
   navMain: [
     {
       title: "Master Data",
       url: "#",
-      icon: (
-        <TerminalSquareIcon />
-      ),
+      icon: <TerminalSquareIcon />,
       isActive: true,
       items: [
         {
@@ -62,90 +57,23 @@ const data = {
           title: "Books",
           url: "/books",
         },
-        // {
-        //   title: "Settings",
-        //   url: "#",
-        // },
       ],
     },
     {
       title: "Transaction",
       url: "#",
-      icon: (
-        <BotIcon />
-      ),
+      icon: <BotIcon />,
       items: [
         {
           title: "Peminjaman",
-          url: "#",
+          url: "/transactions",
         },
-        // {
-        //   title: "Explorer",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Quantum",
-        //   url: "#",
-        // },
       ],
     },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: (
-    //     <BookOpenIcon />
-    //   ),
-    //   items: [
-    //     {
-    //       title: "Introduction",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Get Started",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Tutorials",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Changelog",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: (
-    //     <Settings2Icon />
-    //   ),
-    //   items: [
-    //     {
-    //       title: "General",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Team",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Billing",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Limits",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
   ],
-  
-}
+};
 
-export function AppSidebar({
-  ...props
-}) {
+export function AppSidebar({ ...props }) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>

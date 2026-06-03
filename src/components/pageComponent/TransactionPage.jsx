@@ -21,73 +21,97 @@ import {
 } from "../ui/popover";
 import { createClient } from "@/lib/client";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { format } from "date-fns";
 
-const BookCopyPage = ({ data = [], id }) => {
+const TransactionPage = ({ data = [] }) => {
   const router = useRouter();
   const [openId, setOpenId] = useState(null);
   const supabase = createClient();
 
-  const handleDelete = async (id) => {
+  const handleReturnBook = async (borrowingItemId) => {
     try {
-      const { error } = await supabase.from("books").delete().eq("id", id);
+      const { error } = await supabase.rpc("return_book", {
+        p_borrowing_item_id: borrowingItemId,
+      });
+
       if (error) {
-        console.error("Error deleting book:", error);
-      } else {
-        toast.success("Book deleted successfully");
-        router.refresh();
+        console.error("Error returning book:", error);
+        toast.error(error.message);
+        return;
       }
+
+      toast.success("Book returned successfully");
+      router.refresh();
     } catch (error) {
-      toast.error("An error occurred while deleting the book");
-      console.error("Error deleting book:", error);
+      toast.error("An unexpected error occurred");
+      console.error(error);
     }
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <Tabs defaultValue="book-copy" className="w-full  py-4">
-        <TabsList>
-          <TabsTrigger
-            value="details"
-            onClick={() => router.push("/books/details/" + id)}
-          >
-            Details
-          </TabsTrigger>
-          <TabsTrigger value="book-copy">Book Copies</TabsTrigger>
-        </TabsList>
-        <TabsContent></TabsContent>
-      </Tabs>
-      <h1 className="text-lg font-semibold">Book Copies</h1>
+    <div className="flex flex-col">
+      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
+      <div className="flex justify-between w-full">
+        <div></div>
+        <Link
+          href="/transactions/add"
+          className={buttonVariants({ variant: "default" })}
+        >
+          Add Transactions
+        </Link>
+      </div>
       <Table>
-        <TableCaption>A list of your books.</TableCaption>
+        <TableCaption>A list of your transactions.</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>No</TableHead>
-            <TableHead>Copy Code</TableHead>
+            <TableHead>Peminjam</TableHead>
+            <TableHead>Judul Buku</TableHead>
+            <TableHead>Tanggal Peminjaman</TableHead>
+            <TableHead>Tenggat Waktu</TableHead>
+            <TableHead>Tanggal Pengembalian</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data?.map((book, index) => (
+          {data?.map((transaction, index) => (
             <TableRow key={index}>
               <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{book.copy_code}</TableCell>
-              <TableCell>{book.status}</TableCell>
-              {/* <TableCell className="flex gap-2">
+              <TableCell>{transaction.member_name}</TableCell>
+              <TableCell>{transaction.book_title}</TableCell>
+              <TableCell>
+                {transaction.borrowed_at
+                  ? format(new Date(transaction.borrowed_at), "yyyy-MM-dd")
+                  : "-"}
+              </TableCell>
+              <TableCell>
+                {transaction.due_date
+                  ? format(new Date(transaction.due_date), "yyyy-MM-dd")
+                  : "-"}
+              </TableCell>
+              <TableCell>
+                {transaction.returned_at
+                  ? format(new Date(transaction.returned_at), "yyyy-MM-dd")
+                  : "-"}
+              </TableCell>
+              <TableCell>{transaction.status}</TableCell>
+              <TableCell className="flex gap-2">
                 <Popover
-                  open={openId === book.id}
+                  open={openId === transaction.id}
+                  // disabled={transaction.status === "returned"}
                   onOpenChange={(open) => {
-                    setOpenId(open ? book.id : null);
+                    setOpenId(open ? transaction.id : null);
                   }}
                 >
                   <PopoverTrigger
+                    disabled={transaction.status === "returned"}
                     className={buttonVariants({
-                      variant: "destructive",
                       size: "sm",
                       className: "h-8 px-3 cursor-pointer",
                     })}
                   >
-                    Delete
+                    Return Book
                   </PopoverTrigger>
                   <PopoverContent align="start">
                     <PopoverHeader>
@@ -109,7 +133,7 @@ const BookCopyPage = ({ data = [], id }) => {
                           variant="destructive"
                           size="sm"
                           onClick={() => {
-                            handleDelete(book.id);
+                            handleReturnBook(transaction.id);
                             setOpenId(null);
                           }}
                           className="h-8 px-3 text-xs"
@@ -120,7 +144,7 @@ const BookCopyPage = ({ data = [], id }) => {
                     </div>
                   </PopoverContent>
                 </Popover>
-              </TableCell> */}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -129,4 +153,4 @@ const BookCopyPage = ({ data = [], id }) => {
   );
 };
 
-export default BookCopyPage;
+export default TransactionPage;
