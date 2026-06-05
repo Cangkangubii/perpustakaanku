@@ -22,12 +22,18 @@ import {
 import { createClient } from "@/lib/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Input } from "../ui/input";
+import { SearchIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { Badge } from "../ui/badge";
+import PageHeader from "../shared/PageHeader";
+import BorrowingActionCell from "../shared/ActionTransaction";
+import NewDataTable from "../shared/NewTable";
 
-const TransactionPage = ({ data = [] }) => {
+const TransactionPage = ({ dataSource = [], query }) => {
   const router = useRouter();
-  const [openId, setOpenId] = useState(null);
   const supabase = createClient();
-
+  const form = useForm();
   const handleReturnBook = async (borrowingItemId) => {
     try {
       const { error } = await supabase.rpc("return_book", {
@@ -47,108 +53,103 @@ const TransactionPage = ({ data = [] }) => {
       console.error(error);
     }
   };
+  const onSubmit = ({ search }) => {
+    search
+      ? router.push(`/transactions?search=${encodeURIComponent(search)}`)
+      : router.push("/transactions");
+  };
+  const columns = [
+    {
+      key: "no",
+      title: "No",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      key: "member_name",
+      title: "Peminjam",
+      dataIndex: "member_name",
+    },
+    {
+      key: "book_title",
+      title: "Judul Buku",
+      dataIndex: "book_title",
+    },
+    {
+      key: "borrowed_at",
+      title: "Tanggal Peminjaman",
+      dataIndex: "borrowed_at",
+      render: (value) => (value ? format(new Date(value), "yyyy-MM-dd") : "-"),
+    },
+    {
+      key: "due_date",
+      title: "Tenggat Waktu",
+      dataIndex: "due_date",
+      render: (value) => (value ? format(new Date(value), "yyyy-MM-dd") : "-"),
+    },
+    {
+      key: "returned_at",
+      title: "Tanggal Pengembalian",
+      dataIndex: "returned_at",
+      render: (value) => (value ? format(new Date(value), "yyyy-MM-dd") : "-"),
+    },
+    {
+      key: "status",
+      title: "Status",
+      render: (_, record) => (
+        <>
+          {record.status === "returned" && (
+            <Badge variant="outline">Returned</Badge>
+          )}
+
+          {record.status === "borrowed" && (
+            <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300">
+              Borrowed
+            </Badge>
+          )}
+
+          {record.status === "overdue" && (
+            <Badge variant="destructive">Overdue</Badge>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "actions",
+      title: "Action",
+      render: (_, record) => (
+        <BorrowingActionCell record={record} onReturn={handleReturnBook} />
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">Transactions</h1>
-      <div className="flex justify-between w-full">
-        <div></div>
-        <Link
-          href="/transactions/add"
-          className={buttonVariants({ variant: "default" })}
+      <PageHeader
+        title="Borrowings"
+        addHref="/transactions/add"
+        addLabel="Add Borrowing"
+      >
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex items-center gap-2"
         >
-          Add Transactions
-        </Link>
-      </div>
-      <Table>
-        <TableCaption>A list of your transactions.</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>Peminjam</TableHead>
-            <TableHead>Judul Buku</TableHead>
-            <TableHead>Tanggal Peminjaman</TableHead>
-            <TableHead>Tenggat Waktu</TableHead>
-            <TableHead>Tanggal Pengembalian</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.map((transaction, index) => (
-            <TableRow key={index}>
-              <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{transaction.member_name}</TableCell>
-              <TableCell>{transaction.book_title}</TableCell>
-              <TableCell>
-                {transaction.borrowed_at
-                  ? format(new Date(transaction.borrowed_at), "yyyy-MM-dd")
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                {transaction.due_date
-                  ? format(new Date(transaction.due_date), "yyyy-MM-dd")
-                  : "-"}
-              </TableCell>
-              <TableCell>
-                {transaction.returned_at
-                  ? format(new Date(transaction.returned_at), "yyyy-MM-dd")
-                  : "-"}
-              </TableCell>
-              <TableCell>{transaction.status}</TableCell>
-              <TableCell className="flex gap-2">
-                <Popover
-                  open={openId === transaction.id}
-                  // disabled={transaction.status === "returned"}
-                  onOpenChange={(open) => {
-                    setOpenId(open ? transaction.id : null);
-                  }}
-                >
-                  <PopoverTrigger
-                    disabled={transaction.status === "returned"}
-                    className={buttonVariants({
-                      size: "sm",
-                      className: "h-8 px-3 cursor-pointer",
-                    })}
-                  >
-                    Return Book
-                  </PopoverTrigger>
-                  <PopoverContent align="start">
-                    <PopoverHeader>
-                      <PopoverTitle>
-                        Yakin ingin menghapus data ini?
-                      </PopoverTitle>
-                    </PopoverHeader>
-                    <div className="space-y-3">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-3 text-xs"
-                          onClick={() => setOpenId(null)}
-                        >
-                          Tidak
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            handleReturnBook(transaction.id);
-                            setOpenId(null);
-                          }}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Ya, Hapus
-                        </Button>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          <Input
+            {...form.register("search")}
+            placeholder="Search borrowings..."
+            className="w-72"
+          />
+
+          <Button type="submit" size="icon-sm">
+            <SearchIcon />
+          </Button>
+        </form>
+      </PageHeader>
+      <NewDataTable
+        dataSource={dataSource}
+        columns={columns}
+        query={query}
+        rowKey="id"
+      />
     </div>
   );
 };

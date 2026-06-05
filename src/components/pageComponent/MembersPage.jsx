@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/client";
 import {
   Popover,
@@ -22,10 +22,17 @@ import {
 } from "../ui/popover";
 import { toast } from "sonner";
 
-const MembersPage = ({ data = [] }) => {
+import { Input } from "../ui/input";
+import { SearchIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import PageHeader from "../shared/PageHeader";
+import NewDataTable from "../shared/NewTable";
+import ActionCell from "../shared/ActionCell";
+
+const MembersPage = ({ members = [], query = {} }) => {
   const router = useRouter();
   const supabase = createClient();
-  const [openId, setOpenId] = useState(null);
+
   const handleDelete = async (id) => {
     const { error } = await supabase.from("members").delete().eq("id", id);
     if (error) {
@@ -35,91 +42,63 @@ const MembersPage = ({ data = [] }) => {
       router.refresh();
     }
   };
+  const form = useForm();
+
+  const onSubmit = ({ search }) => {
+    search
+      ? router.push(`/members?search=${encodeURIComponent(search)}`)
+      : router.push("/members");
+  };
+  const columns = [
+    {
+      key: "no",
+      title: "No",
+      dataIndex: "no",
+      render: (value, record, index) => index + 1,
+    },
+    {
+      key: "name",
+      title: "Name",
+      dataIndex: "name",
+    },
+    {
+      key: "status",
+      title: "Status",
+      dataIndex: "status",
+    },
+    {
+      key: "actions",
+      title: "Actions",
+      dataIndex: "id",
+      render: (value, record) => (
+        <ActionCell
+          record={record}
+          detailPath="/members/details"
+          onDelete={handleDelete}
+          deleteDisabled={record.status === "inactive"}
+        />
+      ),
+    },
+  ];
   return (
-    <div className="flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">Members</h1>
-      <div className="flex justify-between w-full">
-        <div></div>
-        <Button onClick={() => router.push("/members/add")}>Add Member</Button>
-      </div>
-      <Table>
-        <TableCaption>A list of your members</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>Nama</TableHead>
-            <TableHead>No Hp</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.map((member, index) => (
-            <TableRow key={index}>
-              <TableCell className="font-medium">{index + 1}</TableCell>
-              <TableCell>{member.name}</TableCell>
-              <TableCell>{member.phone}</TableCell>
-              <TableCell>{member.status}</TableCell>
-              <TableCell className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/members/details/${member.id}`)}
-                  className="cursor-pointer"
-                >
-                  Details
-                </Button>
-                <Popover
-                  open={openId === member.id}
-                  onOpenChange={(open) => {
-                    setOpenId(open ? member.id : null);
-                  }}
-                >
-                  <PopoverTrigger
-                    className={buttonVariants({
-                      variant: "destructive",
-                      size: "sm",
-                      className: "h-8 px-3 cursor-pointer",
-                    })}
-                  >
-                    Delete
-                  </PopoverTrigger>
-                  <PopoverContent align="start">
-                    <PopoverHeader>
-                      <PopoverTitle>
-                        Yakin ingin menghapus data ini?
-                      </PopoverTitle>
-                    </PopoverHeader>
-                    <div className="space-y-3">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-3 text-xs"
-                          onClick={() => setOpenId(null)}
-                        >
-                          Tidak
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            handleDelete(member.id);
-                            setOpenId(null);
-                          }}
-                          className="h-8 px-3 text-xs"
-                        >
-                          Ya, Hapus
-                        </Button>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="flex flex-col space-y-2">
+      <PageHeader title="Members" addHref="/members/add" addLabel="Add Member">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex items-center gap-2"
+        >
+          <Input
+            {...form.register("search")}
+            placeholder="Search members..."
+            className="w-72"
+          />
+
+          <Button type="submit" size="icon-sm">
+            <SearchIcon />
+          </Button>
+        </form>
+      </PageHeader>
+      <NewDataTable columns={columns} dataSource={members} query={query} />
     </div>
   );
 };

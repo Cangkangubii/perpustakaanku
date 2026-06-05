@@ -2,34 +2,65 @@ import TransactionPage from "@/components/pageComponent/TransactionPage";
 import { createClient } from "@/lib/server";
 import React from "react";
 
-const page = async () => {
+const page = async ({ searchParams }) => {
   const supabase = await createClient();
-  const { data: borrowingItems, error } = await supabase.from("borrowing_items")
-    .select(`
-    id,
-    status,
-    returned_at,
+  const params = await searchParams;
+  const page = Number(params.page ?? 1);
+  const perPage = Number(params.per_page ?? 10);
 
-    borrowing_id,
-    bookCopies (
-      copy_code,
-      books (
-        title
-      )
-    ),
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+  const {
+    data: borrowingItems,
+    error,
+    count,
+  } = await supabase
+    .from("borrowing_items")
+    .select(
+      `
+      id,
+      status,
+      returned_at,
 
-    borrowings (
-      borrowed_at,
-      due_date,
-      members (
-        name
+      borrowing_id,
+
+      bookCopies (
+        copy_code,
+        books (
+          title
+        )
+      ),
+
+      borrowings (
+        borrowed_at,
+        due_date,
+        members (
+          name
+        )
       )
+    `,
+      { count: "exact" },
     )
-  `);
+    .range(from, to);
 
-  const borrowList = borrowingItems.map((item) => ({
+  if (error) {
+    console.error("Error fetching transactions:", error);
+    return <div>Error fetching transactions</div>;
+  }
+
+  function getBorrowingStatus(item) {
+    if (item.status === "returned") return "returned";
+
+    if (new Date(item.borrowings.due_date) < new Date()) {
+      return "overdue";
+    }
+
+    return "borrowed";
+  }
+
+  const borrowList = (borrowingItems ?? []).map((item) => ({
     id: item.id,
-    status: item.status,
+    status: getBorrowingStatus(item),
     returned_at: item.returned_at,
     borrowed_at: item.borrowings.borrowed_at,
     due_date: item.borrowings.due_date,
@@ -37,12 +68,16 @@ const page = async () => {
     book_title: item.bookCopies.books.title,
     member_name: item.borrowings.members.name,
   }));
-
-  if (error) {
-    console.error("Error fetching transactions:", error);
-    return <div>Error fetching transactions</div>;
-  }
-  return <TransactionPage data={borrowList} />;
+  return (
+    <TransactionPage
+      dataSource={borrowList}
+      query={{
+        page,
+        per_page: perPage,
+        total: count ?? 0,
+      }}
+    />
+  );
 };
 
 export default page;
