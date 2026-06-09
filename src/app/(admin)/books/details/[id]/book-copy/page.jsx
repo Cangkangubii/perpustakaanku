@@ -7,7 +7,7 @@ const page = async ({ params }) => {
   const supabase = await createClient();
 
   const { data: bookCopies, error } = await supabase
-    .from("bookCopies")
+    .from("book_copies")
     .select(
       `
     id,
@@ -16,7 +16,7 @@ const page = async ({ params }) => {
     created_at
   `,
     )
-    .eq("book_id", Number(id));
+    .eq("book_id", id);
 
   if (error) {
     console.error("Error fetching book details:", error);

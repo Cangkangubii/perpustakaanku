@@ -15,7 +15,7 @@ const page = async ({ searchParams }) => {
     error,
     count,
   } = await supabase
-    .from("borrowing_items")
+    .from("borrowings_items")
     .select(
       `
       id,
@@ -24,7 +24,7 @@ const page = async ({ searchParams }) => {
 
       borrowing_id,
 
-      bookCopies (
+      book_copies (
         copy_code,
         books (
           title
@@ -64,8 +64,8 @@ const page = async ({ searchParams }) => {
     returned_at: item.returned_at,
     borrowed_at: item.borrowings.borrowed_at,
     due_date: item.borrowings.due_date,
-    copy_code: item.bookCopies.copy_code,
-    book_title: item.bookCopies.books.title,
+    copy_code: item.book_copies.copy_code,
+    book_title: item.book_copies.books.title,
     member_name: item.borrowings.members.name,
   }));
   return (

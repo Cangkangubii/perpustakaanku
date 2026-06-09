@@ -21,12 +21,12 @@ import { Calendar } from "../ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 const bookRowSchema = z.object({
-  book_id: z.coerce.number({ message: "Buku wajib dipilih" }),
-  copy_id: z.coerce.number({ message: "Exemplar wajib dipilih" }),
+  book_id: z.string({ message: "Buku wajib dipilih" }),
+  copy_id: z.string({ message: "Exemplar wajib dipilih" }),
 });
 
 const formSchema = z.object({
-  member_id: z.coerce.number({ message: "Peminjam wajib dipilih" }),
+  member_id: z.string({ message: "Peminjam wajib dipilih" }),
   due_date: z.date({ message: "Tanggal kembali wajib dipilih" }),
   books: z.array(bookRowSchema).min(1, "Minimal satu buku harus dipilih"),
 });
@@ -41,7 +41,7 @@ const AddTransaction = ({ bookList = [], memberList = [] }) => {
     if (bookCopiesMap[bookId]) return; // already cached
     try {
       const { data, error } = await supabase
-        .from("bookCopies")
+        .from("book_copies")
         .select("*")
         .eq("book_id", bookId)
         .eq("status", "available");
@@ -116,7 +116,7 @@ const AddTransaction = ({ bookList = [], memberList = [] }) => {
                   <NewSelectComps
                     items={MEMBER_OPTIONS}
                     value={field.value ?? ""}
-                    onValueChange={(val) => field.onChange(Number(val))}
+                    onValueChange={(val) => field.onChange(val)}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -244,7 +244,7 @@ const BookRow = ({
             <NewSelectComps
               items={bookList}
               onValueChange={async (val) => {
-                const bookId = Number(val);
+                const bookId = val;
                 field.onChange(bookId);
                 setValue(`books.${index}.copy_id`, undefined);
                 await getBookCopies(bookId);
@@ -273,7 +273,7 @@ const BookRow = ({
                   label: copy.copy_code,
                   value: copy.id,
                 }))}
-                onValueChange={(val) => field.onChange(Number(val))}
+                onValueChange={(val) => field.onChange(val)}
                 value={field.value ?? ""}
                 disabled={!watchedBookId}
               />

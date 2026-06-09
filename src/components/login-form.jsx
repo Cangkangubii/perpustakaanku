@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/client";
 import { cn } from "@/lib/utils";
@@ -46,15 +46,16 @@ export function LoginForm({ className, ...props }) {
         password,
       });
       if (error) {
-        console.error("Login error from Supabase:", error);
+        // console.error("Login error from Supabase:", error);
         toast.error("Login failed: " + error.message);
-        return;
+        return error;  
       }
       toast.success("Login successful!");
       router.push("/dashboard");
     } catch (error) {
-      console.error("Fatal network/system error:", error);
+      // console.error("Fatal network/system error:", error);
       toast.error("Terjadi kesalahan jaringan. Silakan coba lagi nanti.");
+      return error;
     }
   };
   return (
@@ -86,7 +87,7 @@ export function LoginForm({ className, ...props }) {
                       <FieldError errors={[fieldState.error]} />
                     )}
                   </Field>
-                )}
+                )} 
               />
               <Controller
                 control={form.control}

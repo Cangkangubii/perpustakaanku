@@ -14,7 +14,7 @@ const getTotalBooks = async (supabase) => {
 
 const getTotalCopies = async (supabase) => {
   const { data, error } = await supabase
-    .from("bookCopies")
+    .from("book_copies")
     .select("*", { count: "exact" });
   if (error) {
     console.error("Error fetching total copies:", error);
@@ -37,7 +37,7 @@ const getTotalMembers = async (supabase) => {
 
 const getTotalBorrowedBooks = async (supabase) => {
   const { data, error } = await supabase
-    .from("borrowing_items")
+    .from("borrowings_items")
     .select("*", { count: "exact" });
   if (error) {
     console.error("Error fetching total borrowed books:", error);
@@ -48,7 +48,7 @@ const getTotalBorrowedBooks = async (supabase) => {
 
 const getTotalAvailableBooks = async (supabase) => {
   const { data, error } = await supabase
-    .from("bookCopies")
+    .from("book_copies")
     .select("*", { count: "exact" })
     .eq("status", "available");
   if (error) {
