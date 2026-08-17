@@ -25,7 +25,7 @@ export default function BorrowingActionCell({
         variant="outline"
         size="sm"
         onClick={() =>
-          router.push(`/borrowings/${record.id}`)
+          router.push(`/borrowings/${record.borrowing_id}`)
         }
       >
         Detail

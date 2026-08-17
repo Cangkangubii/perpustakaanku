@@ -60,6 +60,7 @@ const page = async ({ searchParams }) => {
 
   const borrowList = (borrowingItems ?? []).map((item) => ({
     id: item.id,
+    borrowing_id: item.borrowing_id,
     status: getBorrowingStatus(item),
     returned_at: item.returned_at,
     borrowed_at: item.borrowings.borrowed_at,
